@@ -357,7 +357,6 @@ ArduPilotPlugin::ArduPilotPlugin()
 }
 
 /////////////////////////////////////////////////
-// sdl
 static void report(const char * label, double * x, int n=3)
 {
     printf("%s: ", label);
