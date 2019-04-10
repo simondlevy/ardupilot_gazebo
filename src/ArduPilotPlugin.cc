@@ -1029,20 +1029,15 @@ void ArduPilotPlugin::SendState() const
     const ignition::math::Vector3d angularVel =
         this->dataPtr->imuSensor->AngularVelocity();
 
-    // ACCEL **************************************************** sdl
-    pkt.imuLinearAccelerationXYZ[0] = 0;//linearAccel.X(); 
-    pkt.imuLinearAccelerationXYZ[1] = 0;//linearAccel.Y();
-    pkt.imuLinearAccelerationXYZ[2] = linearAccel.Z();
-
     // GYRO *********************************************** sdl
     pkt.imuAngularVelocityRPY[0] = angularVel.X();
     pkt.imuAngularVelocityRPY[1] = angularVel.Y();
     pkt.imuAngularVelocityRPY[2] = angularVel.Z();
 
-    // POS **************************************************** sdl
-    pkt.positionXYZ[0] = 0;//NEDToModelXForwardZUp.Pos().X(); // N
-    pkt.positionXYZ[1] = 0;//NEDToModelXForwardZUp.Pos().Y(); // E
-    pkt.positionXYZ[2] = NEDToModelXForwardZUp.Pos().Z();     // D
+    // ACCEL **************************************************** sdl
+    pkt.imuLinearAccelerationXYZ[0] = 0;//linearAccel.X(); 
+    pkt.imuLinearAccelerationXYZ[1] = 0;//linearAccel.Y();
+    pkt.imuLinearAccelerationXYZ[2] = linearAccel.Z();
 
     // QUAT *************************************************** sdl
     pkt.imuOrientationQuat[0] = NEDToModelXForwardZUp.Rot().W(); 
@@ -1054,6 +1049,11 @@ void ArduPilotPlugin::SendState() const
     pkt.velocityXYZ[0] = 0;//velNEDFrame.X(); 
     pkt.velocityXYZ[1] = 0;//velNEDFrame.Y();
     pkt.velocityXYZ[2] = velNEDFrame.Z();
+
+    // POS **************************************************** sdl
+    pkt.positionXYZ[0] = 0;//NEDToModelXForwardZUp.Pos().X(); // N
+    pkt.positionXYZ[1] = 0;//NEDToModelXForwardZUp.Pos().Y(); // E
+    pkt.positionXYZ[2] = NEDToModelXForwardZUp.Pos().Z();     // D
 
     this->dataPtr->socket_out.Send(&pkt, sizeof(pkt));
 
