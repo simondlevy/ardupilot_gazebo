@@ -990,7 +990,7 @@ void ArduPilotPlugin::SendState() const
     const ignition::math::Vector3d linearAccel =
         this->dataPtr->imuSensor->LinearAcceleration();
 
-    // copy to pkt
+    // copy to pkt ACCEL
     pkt.imuLinearAccelerationXYZ[0] = 0;//linearAccel.X(); // sdl
     pkt.imuLinearAccelerationXYZ[1] = 0;//linearAccel.Y();
     pkt.imuLinearAccelerationXYZ[2] = linearAccel.Z();
@@ -1000,7 +1000,7 @@ void ArduPilotPlugin::SendState() const
     const ignition::math::Vector3d angularVel =
         this->dataPtr->imuSensor->AngularVelocity();
 
-    // copy to pkt
+    // copy to pkt GYRO
     pkt.imuAngularVelocityRPY[0] = angularVel.X(); // sdl
     pkt.imuAngularVelocityRPY[1] = angularVel.Y();
     pkt.imuAngularVelocityRPY[2] = angularVel.Z();
@@ -1036,16 +1036,16 @@ void ArduPilotPlugin::SendState() const
         gazeboXYZToModelXForwardZDown - this->gazeboXYZToNED;
 
     // gzerr << "ned to model [" << NEDToModelXForwardZUp << "]\n";
-
-    // N
+    
+    // POS
+    // N 
     pkt.positionXYZ[0] = 0;//NEDToModelXForwardZUp.Pos().X(); // sdl
-
     // E
     pkt.positionXYZ[1] = 0;//NEDToModelXForwardZUp.Pos().Y();
-
     // D
     pkt.positionXYZ[2] = NEDToModelXForwardZUp.Pos().Z();
 
+    // QUAT
     // imuOrientationQuat is the rotation from world NED frame
     // to the uav frame.
     pkt.imuOrientationQuat[0] = NEDToModelXForwardZUp.Rot().W(); // sdl
@@ -1057,8 +1057,10 @@ void ArduPilotPlugin::SendState() const
         this->dataPtr->model->GetLink()->WorldLinearVel();
     const ignition::math::Vector3d velNEDFrame =
         this->gazeboXYZToNED.Rot().RotateVectorReverse(velGazeboWorldFrame);
-    pkt.velocityXYZ[0] = velNEDFrame.X(); // sdl
-    pkt.velocityXYZ[1] = velNEDFrame.Y();
+
+    // SPEED
+    pkt.velocityXYZ[0] = 0;//velNEDFrame.X(); // sdl
+    pkt.velocityXYZ[1] = 0;//velNEDFrame.Y();
     pkt.velocityXYZ[2] = velNEDFrame.Z();
 
     this->dataPtr->socket_out.Send(&pkt, sizeof(pkt));
