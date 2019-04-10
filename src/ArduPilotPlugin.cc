@@ -397,10 +397,10 @@ static void logMotors(ServoPacket & servo_packet)
 
 static void logFdm(fdmPacket & fdm_packet)
 {
-    printf(" w: %+3.3f hE: %+3.3f", fdm_packet.velocityXYZ[2], fdm_packet.positionXYZ[2]);
-    //report("g", fdm_packet.imuAngularVelocityRPY);
-    //report("a", fdm_packet.imuLinearAccelerationXYZ);
-    //report("q", fdm_packet.imuOrientationQuat, 4);
+    printf(" w: %+3.3f hE: %+3.3f | ", fdm_packet.velocityXYZ[2], fdm_packet.positionXYZ[2]);
+    report("g", fdm_packet.imuAngularVelocityRPY);
+    report("a", fdm_packet.imuLinearAccelerationXYZ);
+    report("q", fdm_packet.imuOrientationQuat, 4);
     //report("v", fdm_packet.velocityXYZ);
     //report("p", fdm_packet.positionXYZ);
     printf("\n");
