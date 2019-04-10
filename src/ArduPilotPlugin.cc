@@ -392,16 +392,16 @@ static void report(const char * label, double * x, int n=3)
 static void logMotors(ServoPacket & servo_packet)
 {
     float * m = servo_packet.motorSpeed;
-    printf("m: %2.2f %2.2f %2.2f %2.2f\n", m[0], m[1], m[2], m[3]);
+    printf("m: %2.2f %2.2f %2.2f %2.2f | ", m[0], m[1], m[2], m[3]);
 }
 
 static void logFdm(fdmPacket & fdm_packet)
 {
-    report("g", fdm_packet.imuAngularVelocityRPY);
-    report("a", fdm_packet.imuLinearAccelerationXYZ);
-    report("q", fdm_packet.imuOrientationQuat, 4);
+    //report("g", fdm_packet.imuAngularVelocityRPY);
+    //report("a", fdm_packet.imuLinearAccelerationXYZ);
+    //report("q", fdm_packet.imuOrientationQuat, 4);
     report("v", fdm_packet.velocityXYZ);
-    report("p", fdm_packet.positionXYZ);
+    //report("p", fdm_packet.positionXYZ);
     printf("\n");
 }
 
