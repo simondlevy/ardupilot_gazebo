@@ -1034,16 +1034,16 @@ void ArduPilotPlugin::SendState() const
     pkt.imuAngularVelocityRPY[1] = angularVel.Y();
     pkt.imuAngularVelocityRPY[2] = angularVel.Z();
 
-    // ACCEL **************************************************** sdl
-    pkt.imuLinearAccelerationXYZ[0] = 0;//linearAccel.X(); 
-    pkt.imuLinearAccelerationXYZ[1] = 0;//linearAccel.Y();
-    pkt.imuLinearAccelerationXYZ[2] = linearAccel.Z();
-
     // QUAT *************************************************** sdl
     pkt.imuOrientationQuat[0] = NEDToModelXForwardZUp.Rot().W(); 
     pkt.imuOrientationQuat[1] = NEDToModelXForwardZUp.Rot().X();
     pkt.imuOrientationQuat[2] = NEDToModelXForwardZUp.Rot().Y();
     pkt.imuOrientationQuat[3] = NEDToModelXForwardZUp.Rot().Z();
+
+    // ACCEL **************************************************** sdl
+    pkt.imuLinearAccelerationXYZ[0] = 0;//linearAccel.X(); 
+    pkt.imuLinearAccelerationXYZ[1] = 0;//linearAccel.Y();
+    pkt.imuLinearAccelerationXYZ[2] = linearAccel.Z();
 
     // VELOCITY ********************************************* sdl
     pkt.velocityXYZ[0] = 0;//velNEDFrame.X(); 
