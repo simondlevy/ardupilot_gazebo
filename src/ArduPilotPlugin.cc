@@ -991,8 +991,8 @@ void ArduPilotPlugin::SendState() const
         this->dataPtr->imuSensor->LinearAcceleration();
 
     // copy to pkt
-    pkt.imuLinearAccelerationXYZ[0] = linearAccel.X(); // sdl
-    pkt.imuLinearAccelerationXYZ[1] = linearAccel.Y();
+    pkt.imuLinearAccelerationXYZ[0] = 0;//linearAccel.X(); // sdl
+    pkt.imuLinearAccelerationXYZ[1] = 0;//linearAccel.Y();
     pkt.imuLinearAccelerationXYZ[2] = linearAccel.Z();
     // gzerr << "lin accel [" << linearAccel << "]\n";
 
