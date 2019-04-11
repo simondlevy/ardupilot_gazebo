@@ -380,7 +380,7 @@ static void logFdm(fdmPacket & fdm_packet)
     report("q", fdm_packet.imuOrientationQuat, 4);
     //report("v", fdm_packet.velocityXYZ);
     //report("p", fdm_packet.positionXYZ);
-    printf("\n");
+    printf("\r");
 }
 
 /////////////////////////////////////////////////
