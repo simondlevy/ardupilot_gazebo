@@ -996,26 +996,6 @@ void ArduPilotPlugin::SendState() const
     const ignition::math::Vector3d linearAccel =
         this->dataPtr->imuSensor->LinearAcceleration();
 
-    // get inertial pose and velocity
-    // position of the uav in world frame
-    // this position is used to calcualte bearing and distance
-    // from starting location, then use that to update gps position.
-    // The algorithm looks something like below (from ardupilot helper
-    // libraries):
-    //   bearing = to_degrees(atan2(position.y, position.x));
-    //   distance = math.sqrt(self.position.x**2 + self.position.y**2)
-    //   (self.latitude, self.longitude) = util.gps_newpos(
-    //    self.home_latitude, self.home_longitude, bearing, distance)
-    // where xyz is in the NED directions.
-    // Gazebo world xyz is assumed to be N, -E, -D, so flip some stuff
-    // around.
-    // orientation of the uav in world NED frame -
-    // assuming the world NED frame has xyz mapped to NED,
-    // imuLink is NED - z down
-
-    // model world pose brings us to model,
-    // which for example zephyr has -y-forward, x-left, z-up
-    // adding modelXYZToAirplaneXForwardZDown rotates
     //   from: model XYZ
     //   to: airplane x-forward, y-left, z-down
     const ignition::math::Pose3d gazeboXYZToModelXForwardZDown =
