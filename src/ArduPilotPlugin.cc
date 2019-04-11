@@ -361,10 +361,12 @@ static void report(const char * label, double * x, int n=3)
 {
     printf("%s: ", label);
     for (int k=0; k<n; ++k) {
-        printf("%+3.3f", x[k]);
+        printf("%+2.2f", x[k]);
         printf("%s", (k==n-1) ? " | " : ",");
     }
 }
+
+static bool fdmReady;
 
 static void logMotors(ServoPacket & servo_packet)
 {
@@ -374,13 +376,15 @@ static void logMotors(ServoPacket & servo_packet)
 
 static void logFdm(fdmPacket & fdm_packet)
 {
-    printf(" w: %+3.3f hE: %+3.3f | ", fdm_packet.velocityXYZ[2], fdm_packet.positionXYZ[2]);
+    printf(" w: %+2.2f hE: %+2.2f | ", fdm_packet.velocityXYZ[2], fdm_packet.positionXYZ[2]);
     report("g", fdm_packet.imuAngularVelocityRPY);
     report("a", fdm_packet.imuLinearAccelerationXYZ);
     report("q", fdm_packet.imuOrientationQuat, 4);
     //report("v", fdm_packet.velocityXYZ);
     //report("p", fdm_packet.positionXYZ);
     printf("\r");
+
+    fdmReady = true;
 }
 
 /////////////////////////////////////////////////
@@ -866,7 +870,9 @@ void ArduPilotPlugin::ReceiveMotorCommand()
     ssize_t recvSize =
         this->dataPtr->socket_in.Recv(&pkt, sizeof(ServoPacket), waitMs);
 
-    logMotors(pkt);
+    if (fdmReady) {
+        logMotors(pkt);
+    }
 
     // Drain the socket in the case we're backed up
     int counter = 0;
