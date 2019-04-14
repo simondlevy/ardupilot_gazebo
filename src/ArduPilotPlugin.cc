@@ -349,8 +349,8 @@ class gazebo::ArduPilotPluginPrivate
 };
 
 ///////////////////////////////////////////////// sdl
-static bool fdmReady;
 static bool airborne;
+static double timestamp;
 static FILE * logfp;
 
 static void report(const char * label, double * x, int n=3)
@@ -371,7 +371,7 @@ ArduPilotPlugin::ArduPilotPlugin()
     this->dataPtr->arduPilotOnline = false;
     this->dataPtr->connectionTimeoutCount = 0;
 
-    logfp = fopen("log.txt", "w");
+    logfp = fopen("gazebo_log.txt", "w");
 }
 
 /////////////////////////////////////////////////
@@ -857,10 +857,10 @@ void ArduPilotPlugin::ReceiveMotorCommand()
     ssize_t recvSize =
         this->dataPtr->socket_in.Recv(&pkt, sizeof(ServoPacket), waitMs);
 
-    if (fdmReady) {
+    if (timestamp > 0) {
         float * m = pkt.motorSpeed;
         if (m[0] >= 0.10) airborne = true;
-        if (airborne) fprintf(logfp, "m: %2.2f %2.2f %2.2f %2.2f | ", m[0], m[1], m[2], m[3]);
+        if (airborne) fprintf(logfp, "t: %f | m: %2.2f,%2.2f,%2.2f,%2.2f | ", timestamp, m[0], m[1], m[2], m[3]);
     }
 
     // Drain the socket in the case we're backed up
@@ -1032,11 +1032,11 @@ void ArduPilotPlugin::SendState() const
 
     this->dataPtr->socket_out.Send(&pkt, sizeof(pkt));
 
-    fdmReady = true;    
+    timestamp = pkt.timestamp;
 
     if (airborne) {
         report("g", pkt.imuAngularVelocityRPY);
         report("q", pkt.imuOrientationQuat, 4);
-        fprintf(logfp, "\n");
+        fprintf(logfp, "%+3.3f\n", pkt.positionXYZ[2]);
     }
 }
