@@ -1025,76 +1025,9 @@ void ArduPilotPlugin::SendState() const
 
     this->dataPtr->socket_out.Send(&pkt, sizeof(pkt));
 
-    printf(" w: %+2.2f hE: %+2.2f | ", pkt.velocityXYZ[2], pkt.positionXYZ[2]);
+    fdmReady = true;    
     report("g", pkt.imuAngularVelocityRPY);
-    report("a", pkt.imuLinearAccelerationXYZ);
     report("q", pkt.imuOrientationQuat, 4);
-    //report("v", pkt.velocityXYZ);
-    //report("p", pkt.positionXYZ);
-    printf("\r");
-
-    fdmReady = true;    printf(" w: %+2.2f hE: %+2.2f | ", pkt.velocityXYZ[2], pkt.positionXYZ[2]);
-    report("g", pkt.imuAngularVelocityRPY);
-    report("a", pkt.imuLinearAccelerationXYZ);
-    report("q", pkt.imuOrientationQuat, 4);
-    //report("v", pkt.velocityXYZ);
-    //report("p", pkt.positionXYZ);
-    printf("\r");
-
-    fdmReady = true;    printf(" w: %+2.2f hE: %+2.2f | ", pkt.velocityXYZ[2], pkt.positionXYZ[2]);
-    report("g", pkt.imuAngularVelocityRPY);
-    report("a", pkt.imuLinearAccelerationXYZ);
-    report("q", pkt.imuOrientationQuat, 4);
-    //report("v", pkt.velocityXYZ);
-    //report("p", pkt.positionXYZ);
-    printf("\r");
-
-    fdmReady = true;    printf(" w: %+2.2f hE: %+2.2f | ", pkt.velocityXYZ[2], pkt.positionXYZ[2]);
-    report("g", pkt.imuAngularVelocityRPY);
-    report("a", pkt.imuLinearAccelerationXYZ);
-    report("q", pkt.imuOrientationQuat, 4);
-    //report("v", pkt.velocityXYZ);
-    //report("p", pkt.positionXYZ);
-    printf("\r");
-
-    fdmReady = true;    printf(" w: %+2.2f hE: %+2.2f | ", pkt.velocityXYZ[2], pkt.positionXYZ[2]);
-    report("g", pkt.imuAngularVelocityRPY);
-    report("a", pkt.imuLinearAccelerationXYZ);
-    report("q", pkt.imuOrientationQuat, 4);
-    //report("v", pkt.velocityXYZ);
-    //report("p", pkt.positionXYZ);
-    printf("\r");
-
-    fdmReady = true;    printf(" w: %+2.2f hE: %+2.2f | ", pkt.velocityXYZ[2], pkt.positionXYZ[2]);
-    report("g", pkt.imuAngularVelocityRPY);
-    report("a", pkt.imuLinearAccelerationXYZ);
-    report("q", pkt.imuOrientationQuat, 4);
-    //report("v", pkt.velocityXYZ);
-    //report("p", pkt.positionXYZ);
-    printf("\r");
-
-    fdmReady = true;    printf(" w: %+2.2f hE: %+2.2f | ", pkt.velocityXYZ[2], pkt.positionXYZ[2]);
-    report("g", pkt.imuAngularVelocityRPY);
-    report("a", pkt.imuLinearAccelerationXYZ);
-    report("q", pkt.imuOrientationQuat, 4);
-    //report("v", pkt.velocityXYZ);
-    //report("p", pkt.positionXYZ);
-    printf("\r");
-
-    fdmReady = true;    printf(" w: %+2.2f hE: %+2.2f | ", pkt.velocityXYZ[2], pkt.positionXYZ[2]);
-    report("g", pkt.imuAngularVelocityRPY);
-    report("a", pkt.imuLinearAccelerationXYZ);
-    report("q", pkt.imuOrientationQuat, 4);
-    //report("v", pkt.velocityXYZ);
-    //report("p", pkt.positionXYZ);
-    printf("\r");
-
-    fdmReady = true;    printf(" w: %+2.2f hE: %+2.2f | ", pkt.velocityXYZ[2], pkt.positionXYZ[2]);
-    report("g", pkt.imuAngularVelocityRPY);
-    report("a", pkt.imuLinearAccelerationXYZ);
-    report("q", pkt.imuOrientationQuat, 4);
-    //report("v", pkt.velocityXYZ);
-    //report("p", pkt.positionXYZ);
-    printf("\r");
+    printf("\n");
 
     fdmReady = true;}
