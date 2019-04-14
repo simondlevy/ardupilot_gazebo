@@ -361,7 +361,7 @@ static void report(const char * label, double * x, int n=3)
 {
     printf("%s: ", label);
     for (int k=0; k<n; ++k) {
-        printf("%+2.2f", x[k]);
+        printf("%+3.3f", x[k]);
         printf("%s", (k==n-1) ? " | " : ",");
     }
 }
@@ -1014,13 +1014,13 @@ void ArduPilotPlugin::SendState() const
     pkt.imuLinearAccelerationXYZ[2] = linearAccel.Z();
 
     // VELOCITY ********************************************* sdl
-    pkt.velocityXYZ[0] = 0;//velNEDFrame.X(); 
-    pkt.velocityXYZ[1] = 0;//velNEDFrame.Y();
+    pkt.velocityXYZ[0] = velNEDFrame.X(); 
+    pkt.velocityXYZ[1] = velNEDFrame.Y();
     pkt.velocityXYZ[2] = velNEDFrame.Z();
 
     // POS **************************************************** sdl
-    pkt.positionXYZ[0] = 0;//NEDToModelXForwardZUp.Pos().X(); // N
-    pkt.positionXYZ[1] = 0;//NEDToModelXForwardZUp.Pos().Y(); // E
+    pkt.positionXYZ[0] = NEDToModelXForwardZUp.Pos().X(); // N
+    pkt.positionXYZ[1] = NEDToModelXForwardZUp.Pos().Y(); // E
     pkt.positionXYZ[2] = NEDToModelXForwardZUp.Pos().Z();     // D
 
     this->dataPtr->socket_out.Send(&pkt, sizeof(pkt));
