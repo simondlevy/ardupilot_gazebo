@@ -367,6 +367,7 @@ static void report(const char * label, double * x, int n=3)
 }
 
 static bool fdmReady;
+static bool airborne;
 
 /////////////////////////////////////////////////
 ArduPilotPlugin::~ArduPilotPlugin()
@@ -853,7 +854,8 @@ void ArduPilotPlugin::ReceiveMotorCommand()
 
     if (fdmReady) {
         float * m = pkt.motorSpeed;
-        printf("m: %2.2f %2.2f %2.2f %2.2f | ", m[0], m[1], m[2], m[3]);
+        if (m[0] >= 0.10) airborne = true;
+        if (airborne) printf("m: %2.2f %2.2f %2.2f %2.2f | ", m[0], m[1], m[2], m[3]);
     }
 
     // Drain the socket in the case we're backed up
@@ -1026,8 +1028,10 @@ void ArduPilotPlugin::SendState() const
     this->dataPtr->socket_out.Send(&pkt, sizeof(pkt));
 
     fdmReady = true;    
-    report("g", pkt.imuAngularVelocityRPY);
-    report("q", pkt.imuOrientationQuat, 4);
-    printf("\n");
 
-    fdmReady = true;}
+    if (airborne) {
+        report("g", pkt.imuAngularVelocityRPY);
+        report("q", pkt.imuOrientationQuat, 4);
+        printf("\n");
+    }
+}
