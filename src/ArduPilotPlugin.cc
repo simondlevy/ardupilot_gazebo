@@ -349,7 +349,7 @@ class gazebo::ArduPilotPluginPrivate
 };
 
 ///////////////////////////////////////////////// sdl
-static bool airborne;
+static bool spinning;
 static double timestamp;
 static FILE * logfp;
 
@@ -361,8 +361,6 @@ static void report(const char * label, double * x, int n=3)
         fprintf(logfp, "%s", (k==n-1) ? " | " : ",");
     }
 }
-
-
 
 /////////////////////////////////////////////////
 ArduPilotPlugin::ArduPilotPlugin()
@@ -718,8 +716,7 @@ void ArduPilotPlugin::OnUpdate()
         this->ReceiveMotorCommand();
         if (this->dataPtr->arduPilotOnline)
         {
-            this->ApplyMotorForces((curTime -
-                        this->dataPtr->lastControllerUpdateTime).Double());
+            this->ApplyMotorForces((curTime - this->dataPtr->lastControllerUpdateTime).Double());
             this->SendState();
         }
     }
@@ -777,55 +774,11 @@ void ArduPilotPlugin::ApplyMotorForces(const double _dt)
     // update velocity PID for controls and apply force to joint
     for (size_t i = 0; i < this->dataPtr->controls.size(); ++i)
     {
-        if (this->dataPtr->controls[i].useForce)
-        {
-            if (this->dataPtr->controls[i].type == "VELOCITY")
-            {
-                const double velTarget = this->dataPtr->controls[i].cmd /
-                    this->dataPtr->controls[i].rotorVelocitySlowdownSim;
-                const double vel = this->dataPtr->controls[i].joint->GetVelocity(0);
-                const double error = vel - velTarget;
-                const double force = this->dataPtr->controls[i].pid.Update(error, _dt);
-                this->dataPtr->controls[i].joint->SetForce(0, force);
-            }
-            else if (this->dataPtr->controls[i].type == "POSITION")
-            {
-                const double posTarget = this->dataPtr->controls[i].cmd;
-                const double pos = this->dataPtr->controls[i].joint->Position();
-                const double error = pos - posTarget;
-                const double force = this->dataPtr->controls[i].pid.Update(error, _dt);
-                this->dataPtr->controls[i].joint->SetForce(0, force);
-            }
-            else if (this->dataPtr->controls[i].type == "EFFORT")
-            {
-                const double force = this->dataPtr->controls[i].cmd;
-                this->dataPtr->controls[i].joint->SetForce(0, force);
-            }
-            else
-            {
-                // do nothing
-            }
-        }
-        else 
-        {
-            if (this->dataPtr->controls[i].type == "VELOCITY")
-            {
-                this->dataPtr->controls[i].joint->SetVelocity(0, this->dataPtr->controls[i].cmd);
-            }
-            else if (this->dataPtr->controls[i].type == "POSITION")
-            {
-                this->dataPtr->controls[i].joint->SetPosition(0, this->dataPtr->controls[i].cmd);
-            }
-            else if (this->dataPtr->controls[i].type == "EFFORT")
-            {
-                const double force = this->dataPtr->controls[i].cmd;
-                this->dataPtr->controls[i].joint->SetForce(0, force);
-            }
-            else
-            {
-                // do nothing
-            }
-        }
+        const double velTarget = this->dataPtr->controls[i].cmd;
+        const double vel = this->dataPtr->controls[i].joint->GetVelocity(0);
+        const double error = vel - velTarget;
+        const double force = this->dataPtr->controls[i].pid.Update(error, _dt);
+        this->dataPtr->controls[i].joint->SetForce(0, force);
     }
 }
 
@@ -859,8 +812,8 @@ void ArduPilotPlugin::ReceiveMotorCommand()
 
     if (timestamp > 0) {
         float * m = pkt.motorSpeed;
-        if (m[0] >= 0.10) airborne = true;
-        if (airborne) fprintf(logfp, "t: %f | m: %2.2f,%2.2f,%2.2f,%2.2f | ", timestamp, m[0], m[1], m[2], m[3]);
+        if (m[0] >= 0.10) spinning = true;
+        if (spinning) fprintf(logfp, "t: %f | m: %2.2f,%2.2f,%2.2f,%2.2f | ", timestamp, m[0], m[1], m[2], m[3]);
     }
 
     // Drain the socket in the case we're backed up
@@ -910,8 +863,7 @@ void ArduPilotPlugin::ReceiveMotorCommand()
     }
     else
     {
-        const ssize_t expectedPktSize =
-            sizeof(pkt.motorSpeed[0]) * this->dataPtr->controls.size();
+        const ssize_t expectedPktSize = sizeof(pkt.motorSpeed[0]) * this->dataPtr->controls.size();
         if (recvSize < expectedPktSize)
         {
             gzerr << "[" << this->dataPtr->modelName << "] "
@@ -1016,8 +968,8 @@ void ArduPilotPlugin::SendState() const
     pkt.imuOrientationQuat[3] = NEDToModelXForwardZUp.Rot().Z();
 
     // ACCEL **************************************************** sdl
-    pkt.imuLinearAccelerationXYZ[0] = 0;//linearAccel.X(); 
-    pkt.imuLinearAccelerationXYZ[1] = 0;//linearAccel.Y();
+    pkt.imuLinearAccelerationXYZ[0] = linearAccel.X(); 
+    pkt.imuLinearAccelerationXYZ[1] = linearAccel.Y();
     pkt.imuLinearAccelerationXYZ[2] = linearAccel.Z();
 
     // VELOCITY ********************************************* sdl
@@ -1028,15 +980,17 @@ void ArduPilotPlugin::SendState() const
     // POS **************************************************** sdl
     pkt.positionXYZ[0] = NEDToModelXForwardZUp.Pos().X(); // N
     pkt.positionXYZ[1] = NEDToModelXForwardZUp.Pos().Y(); // E
-    pkt.positionXYZ[2] = NEDToModelXForwardZUp.Pos().Z();     // D
+    pkt.positionXYZ[2] = NEDToModelXForwardZUp.Pos().Z(); // D
 
     this->dataPtr->socket_out.Send(&pkt, sizeof(pkt));
 
     timestamp = pkt.timestamp;
 
-    if (airborne) {
+    if (spinning) {
         report("g", pkt.imuAngularVelocityRPY);
         report("q", pkt.imuOrientationQuat, 4);
-        fprintf(logfp, "%+3.3f\n", pkt.positionXYZ[2]);
+        fprintf(logfp, "dw: %+3.3f | ", pkt.imuLinearAccelerationXYZ[2]);
+        fprintf(logfp, "w: %+3.3f | ",  pkt.velocityXYZ[2]);
+        fprintf(logfp, "hE: %+3.3f\n", pkt.positionXYZ[2]);
     }
 }
