@@ -813,7 +813,10 @@ void ArduPilotPlugin::ReceiveMotorCommand()
     if (timestamp > 0) {
         float * m = pkt.motorSpeed;
         if (m[0] >= 0.10) spinning = true;
-        if (spinning) fprintf(logfp, "t: %f | m: %2.2f,%2.2f,%2.2f,%2.2f | ", timestamp, m[0], m[1], m[2], m[3]);
+        if (spinning) {
+            fprintf(logfp, "t: %f | m: %2.2f,%2.2f,%2.2f,%2.2f | ", timestamp, m[0], m[1], m[2], m[3]);
+            printf("m0=%2.2f  m1=%2.2f  m2=%2.2f  m3=%2.2f\n", m[0], m[1], m[2], m[3]);
+        }
     }
 
     // Drain the socket in the case we're backed up
@@ -988,6 +991,7 @@ void ArduPilotPlugin::SendState() const
 
     if (spinning) {
         report("g", pkt.imuAngularVelocityRPY);
+        report("a", pkt.imuLinearAccelerationXYZ);
         report("q", pkt.imuOrientationQuat, 4);
         fprintf(logfp, "dw: %+3.3f | ", pkt.imuLinearAccelerationXYZ[2]);
         fprintf(logfp, "w: %+3.3f | ",  pkt.velocityXYZ[2]);
