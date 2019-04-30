@@ -999,8 +999,7 @@ void ArduPilotPlugin::SendState() const
         report("g", pkt.imuAngularVelocityRPY);
         report("a", pkt.imuLinearAccelerationXYZ);
         report("q", pkt.imuOrientationQuat, 4);
-        fprintf(logfp, "dw: %+3.3f | ", pkt.imuLinearAccelerationXYZ[2]);
-        fprintf(logfp, "w: %+3.3f | ",  pkt.velocityXYZ[2]);
-        fprintf(logfp, "hE: %+3.3f\n", pkt.positionXYZ[2]);
+        report("p", pkt.positionXYZ);
+        fprintf(logfp, "\n");
     }
 }
