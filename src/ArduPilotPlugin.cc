@@ -820,7 +820,7 @@ void ArduPilotPlugin::ReceiveMotorCommand()
             }
         }
         if (spinning) {
-            fprintf(logfp, "t: %f | m: %2.2f,%2.2f,%2.2f,%2.2f | ", 
+            fprintf(logfp, "t: %3.3f | m: %2.2f,%2.2f,%2.2f,%2.2f | ", 
                     timestamp-timestart, m[0], m[1], m[2], m[3]);
         }
     }
