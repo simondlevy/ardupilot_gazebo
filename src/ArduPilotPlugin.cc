@@ -351,6 +351,7 @@ class gazebo::ArduPilotPluginPrivate
 ///////////////////////////////////////////////// sdl
 static bool spinning;
 static double timestamp;
+static double timestart;
 static FILE * logfp;
 
 static void report(const char * label, double * x, int n=3)
@@ -812,9 +813,15 @@ void ArduPilotPlugin::ReceiveMotorCommand()
 
     if (timestamp > 0) {
         float * m = pkt.motorSpeed;
-        if (m[0] >= 0.10) spinning = true;
+        if (!spinning) {
+            if (m[0] >= 0.10) {
+                spinning = true;
+                timestart = timestamp;
+            }
+        }
         if (spinning) {
-            fprintf(logfp, "t: %f | m: %2.2f,%2.2f,%2.2f,%2.2f | ", timestamp, m[0], m[1], m[2], m[3]);
+            fprintf(logfp, "t: %f | m: %2.2f,%2.2f,%2.2f,%2.2f | ", 
+                    timestamp-timestart, m[0], m[1], m[2], m[3]);
         }
     }
 
