@@ -815,7 +815,6 @@ void ArduPilotPlugin::ReceiveMotorCommand()
         if (m[0] >= 0.10) spinning = true;
         if (spinning) {
             fprintf(logfp, "t: %f | m: %2.2f,%2.2f,%2.2f,%2.2f | ", timestamp, m[0], m[1], m[2], m[3]);
-            printf("m0=%2.2f  m1=%2.2f  m2=%2.2f  m3=%2.2f\n", m[0], m[1], m[2], m[3]);
         }
     }
 
