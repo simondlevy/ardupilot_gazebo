@@ -965,6 +965,8 @@ void ArduPilotPlugin::SendState() const
     const ignition::math::Vector3d angularVel =
         this->dataPtr->imuSensor->AngularVelocity();
 
+    NEDToModelXForwardZUp.Pos().X();
+
     // GYRO *********************************************** sdl
     pkt.imuAngularVelocityRPY[0] = angularVel.X();
     pkt.imuAngularVelocityRPY[1] = angularVel.Y();
