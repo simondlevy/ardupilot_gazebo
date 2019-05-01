@@ -929,6 +929,14 @@ void ArduPilotPlugin::ReceiveMotorCommand()
     }
 }
 
+// sdl
+static void quat2euler(double q[4], double euler[3])
+{
+    euler[0] = atan2(2.0f*(q[0]*q[1]+q[2]*q[3]),q[0]*q[0]-q[1]*q[1]-q[2]*q[2]+q[3]*q[3]);
+    euler[1] =  asin(2.0f*(q[1]*q[3]-q[0]*q[2]));
+    euler[2] = atan2(2.0f*(q[1]*q[2]+q[0]*q[3]),q[0]*q[0]+q[1]*q[1]-q[2]*q[2]-q[3]*q[3]);
+}
+
 /////////////////////////////////////////////////
 void ArduPilotPlugin::SendState() const
 {
@@ -965,30 +973,25 @@ void ArduPilotPlugin::SendState() const
     const ignition::math::Vector3d angularVel =
         this->dataPtr->imuSensor->AngularVelocity();
 
-    NEDToModelXForwardZUp.Pos().X();
+    // sdl -------------------------------------------------------------
 
-    // GYRO *********************************************** sdl
     pkt.imuAngularVelocityRPY[0] = angularVel.X();
     pkt.imuAngularVelocityRPY[1] = angularVel.Y();
     pkt.imuAngularVelocityRPY[2] = angularVel.Z();
 
-    // QUAT *************************************************** sdl
     pkt.imuOrientationQuat[0] = NEDToModelXForwardZUp.Rot().W(); 
     pkt.imuOrientationQuat[1] = NEDToModelXForwardZUp.Rot().X();
     pkt.imuOrientationQuat[2] = NEDToModelXForwardZUp.Rot().Y();
     pkt.imuOrientationQuat[3] = NEDToModelXForwardZUp.Rot().Z();
 
-    // ACCEL **************************************************** sdl
     pkt.imuLinearAccelerationXYZ[0] = linearAccel.X(); 
     pkt.imuLinearAccelerationXYZ[1] = linearAccel.Y();
     pkt.imuLinearAccelerationXYZ[2] = linearAccel.Z();
 
-    // VELOCITY ********************************************* sdl
     pkt.velocityXYZ[0] = velNEDFrame.X(); 
     pkt.velocityXYZ[1] = velNEDFrame.Y();
     pkt.velocityXYZ[2] = velNEDFrame.Z();
 
-    // POS **************************************************** sdl
     pkt.positionXYZ[0] = NEDToModelXForwardZUp.Pos().X(); // N
     pkt.positionXYZ[1] = NEDToModelXForwardZUp.Pos().Y(); // E
     pkt.positionXYZ[2] = NEDToModelXForwardZUp.Pos().Z(); // D
@@ -998,7 +1001,13 @@ void ArduPilotPlugin::SendState() const
     timestamp = pkt.timestamp;
 
     if (spinning) {
+
+        // Convert quaternion into Euler angles
+        double euler[3] = {0, 0, 0};
+        quat2euler(pkt.imuOrientationQuat, euler);
+
         report("g", pkt.imuAngularVelocityRPY);
+        report("e", euler);
         report("a", pkt.imuLinearAccelerationXYZ);
         report("q", pkt.imuOrientationQuat, 4);
         report("p", pkt.positionXYZ);
