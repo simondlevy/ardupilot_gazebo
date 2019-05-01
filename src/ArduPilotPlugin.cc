@@ -370,7 +370,7 @@ ArduPilotPlugin::ArduPilotPlugin()
     this->dataPtr->arduPilotOnline = false;
     this->dataPtr->connectionTimeoutCount = 0;
 
-    logfp = fopen("gazebo_log.txt", "w");
+    logfp = fopen("gazebo.log", "w");
 }
 
 /////////////////////////////////////////////////
