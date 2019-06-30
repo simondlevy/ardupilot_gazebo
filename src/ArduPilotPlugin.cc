@@ -16,19 +16,11 @@
  */
 #include <functional>
 #include <fcntl.h>
-#ifdef _WIN32
-#include <Winsock2.h>
-#include <Ws2def.h>
-#include <Ws2ipdef.h>
-#include <Ws2tcpip.h>
-using raw_type = char;
-#else
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
 using raw_type = void;
-#endif
 
 #if defined(_MSC_VER)
 #include <BaseTsd.h>
@@ -149,20 +141,18 @@ class gazebo::ArduPilotSocketPrivate
     public: ArduPilotSocketPrivate()
             {
                 // initialize socket udp socket
-                fd = socket(AF_INET, SOCK_DGRAM, 0);
-#ifndef _WIN32
+                this->sockfd = socket(AF_INET, SOCK_DGRAM, 0);
                 // Windows does not support FD_CLOEXEC
-                fcntl(fd, F_SETFD, FD_CLOEXEC);
-#endif
+                fcntl(this->sockfd, F_SETFD, FD_CLOEXEC);
             }
 
             /// \brief destructor
     public: ~ArduPilotSocketPrivate()
             {
-                if (fd != -1)
+                if (this->sockfd != -1)
                 {
-                    ::close(fd);
-                    fd = -1;
+                    ::close(this->sockfd);
+                    this->sockfd = -1;
                 }
             }
 
@@ -175,28 +165,18 @@ class gazebo::ArduPilotSocketPrivate
                 struct sockaddr_in sockaddr;
                 this->MakeSockAddr(_address, _port, sockaddr);
 
-                if (bind(this->fd, (struct sockaddr *)&sockaddr, sizeof(sockaddr)) != 0)
+                if (bind(this->sockfd, (struct sockaddr *)&sockaddr, sizeof(sockaddr)) != 0)
                 {
-                    shutdown(this->fd, 0);
-#ifdef _WIN32
-                    closesocket(this->fd);
-#else
-                    close(this->fd);
-#endif
+                    shutdown(this->sockfd, 0);
+                    close(this->sockfd);
                     return false;
                 }
                 int one = 1;
-                setsockopt(this->fd, SOL_SOCKET, SO_REUSEADDR,
+                setsockopt(this->sockfd, SOL_SOCKET, SO_REUSEADDR,
                         reinterpret_cast<const char *>(&one), sizeof(one));
 
-#ifdef _WIN32
-                u_long on = 1;
-                ioctlsocket(this->fd, FIONBIO,
-                        reinterpret_cast<u_long FAR *>(&on));
-#else
-                fcntl(this->fd, F_SETFL,
-                        fcntl(this->fd, F_GETFL, 0) | O_NONBLOCK);
-#endif
+                fcntl(this->sockfd, F_SETFL,
+                        fcntl(this->sockfd, F_GETFL, 0) | O_NONBLOCK);
                 return true;
             }
 
@@ -209,28 +189,18 @@ class gazebo::ArduPilotSocketPrivate
                  struct sockaddr_in sockaddr;
                  this->MakeSockAddr(_address, _port, sockaddr);
 
-                 if (connect(this->fd, (struct sockaddr *)&sockaddr, sizeof(sockaddr)) != 0)
+                 if (connect(this->sockfd, (struct sockaddr *)&sockaddr, sizeof(sockaddr)) != 0)
                  {
-                     shutdown(this->fd, 0);
-#ifdef _WIN32
-                     closesocket(this->fd);
-#else
-                     close(this->fd);
-#endif
+                     shutdown(this->sockfd, 0);
+                     close(this->sockfd);
                      return false;
                  }
                  int one = 1;
-                 setsockopt(this->fd, SOL_SOCKET, SO_REUSEADDR,
+                 setsockopt(this->sockfd, SOL_SOCKET, SO_REUSEADDR,
                          reinterpret_cast<const char *>(&one), sizeof(one));
 
-#ifdef _WIN32
-                 u_long on = 1;
-                 ioctlsocket(this->fd, FIONBIO,
-                         reinterpret_cast<u_long FAR *>(&on));
-#else
-                 fcntl(this->fd, F_SETFL,
-                         fcntl(this->fd, F_GETFL, 0) | O_NONBLOCK);
-#endif
+                 fcntl(this->sockfd, F_SETFL,
+                         fcntl(this->sockfd, F_GETFL, 0) | O_NONBLOCK);
                  return true;
              }
 
@@ -242,11 +212,6 @@ class gazebo::ArduPilotSocketPrivate
                     struct sockaddr_in &_sockaddr)
             {
                 memset(&_sockaddr, 0, sizeof(_sockaddr));
-
-#ifdef HAVE_SOCK_SIN_LEN
-                _sockaddr.sin_len = sizeof(_sockaddr);
-#endif
-
                 _sockaddr.sin_port = htons(_port);
                 _sockaddr.sin_family = AF_INET;
                 _sockaddr.sin_addr.s_addr = inet_addr(_address);
@@ -254,7 +219,7 @@ class gazebo::ArduPilotSocketPrivate
 
     public: ssize_t Send(const void *_buf, size_t _size)
             {
-                return send(this->fd, _buf, _size, 0);
+                return send(this->sockfd, _buf, _size, 0);
             }
 
             /// \brief Receive data
@@ -267,26 +232,24 @@ class gazebo::ArduPilotSocketPrivate
                 struct timeval tv;
 
                 FD_ZERO(&fds);
-                FD_SET(this->fd, &fds);
+                FD_SET(this->sockfd, &fds);
 
                 tv.tv_sec = _timeoutMs / 1000;
                 tv.tv_usec = (_timeoutMs % 1000) * 1000UL;
 
-                if (select(this->fd+1, &fds, NULL, NULL, &tv) != 1)
+                if (select(this->sockfd+1, &fds, NULL, NULL, &tv) != 1)
                 {
                     return -1;
                 }
 
-#ifdef _WIN32
-                return recv(this->fd, reinterpret_cast<char *>(_buf), _size, 0);
-#else
-                return recv(this->fd, _buf, _size, 0);
-#endif
+                return recv(this->sockfd, _buf, _size, 0);
             }
 
             /// \brief Socket handle
-    private: int fd;
+    private: int sockfd;
 };
+
+// ====================================================================
 
 // Private data class
 class gazebo::ArduPilotPluginPrivate
@@ -358,7 +321,7 @@ static void report(const char * label, double * x, int n=3)
 {
     fprintf(logfp, "%s: ", label);
     for (int k=0; k<n; ++k) {
-        fprintf(logfp, "%+3.3f", x[k]);
+        fprintf(logfp, "%+6.6f", x[k]);
         fprintf(logfp, "%s", (k==n-1) ? " | " : ",");
     }
 }
@@ -370,7 +333,7 @@ ArduPilotPlugin::ArduPilotPlugin()
     this->dataPtr->arduPilotOnline = false;
     this->dataPtr->connectionTimeoutCount = 0;
 
-    logfp = fopen("gazebo.log", "w");
+    logfp = stderr;//fopen("gazebo.log", "w");
 }
 
 /////////////////////////////////////////////////
@@ -820,8 +783,8 @@ void ArduPilotPlugin::ReceiveMotorCommand()
             }
         }
         if (spinning) {
-            fprintf(logfp, "t: %3.3f | m: %2.2f,%2.2f,%2.2f,%2.2f | ", 
-                    timestamp-timestart, m[0], m[1], m[2], m[3]);
+            //fprintf(logfp, "t: %3.3f | m: %2.2f,%2.2f,%2.2f,%2.2f | ", 
+            //        timestamp-timestart, m[0], m[1], m[2], m[3]);
         }
     }
 
@@ -945,6 +908,9 @@ void ArduPilotPlugin::SendState() const
 
     pkt.timestamp = this->dataPtr->model->GetWorld()->SimTime().Double();
 
+    static uint32_t count;
+    fprintf(stderr, "FPS: %d\r", (int)(++count/pkt.timestamp));
+
     // asssumed that the imu orientation is:
     //   x forward
     //   y right
@@ -1000,7 +966,7 @@ void ArduPilotPlugin::SendState() const
 
     timestamp = pkt.timestamp;
 
-    if (spinning) {
+    if (false /*spinning*/) {
 
         // Convert quaternion into Euler angles
         double euler[3] = {0, 0, 0};
